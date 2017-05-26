@@ -10,7 +10,12 @@
         console.log("Load wasm binary");
         const response = await fetch("examples.wasm");
         const bytes = await response.arrayBuffer();
-        const module = await WebAssembly.instantiate(bytes);
+        const module = await WebAssembly.instantiate(bytes, {
+          utils: {
+            log: () => console.log("Hello from wasm!"),
+            increment: arg => ++arg,
+          }
+        });
         this.lib = module.instance.exports;
         console.log("Finished loading wasm binary");
         console.log(this.lib);
@@ -21,7 +26,7 @@
         console.log("-- loop --")
         const count = 1000000;
         console.time("wasm count");
-        this.lib.loopIt(count);
+        console.log(`counted to : ${this.lib.loopIt(count)}`);
         console.timeEnd("wasm count");
 
         console.time("js count");
@@ -51,6 +56,13 @@
         console.log(this.lib.greaterThanEqual(1, 1));
         console.log(this.lib.greaterThanEqual(1, 0));
         console.log(this.lib.greaterThanEqual(1, 2));
+
+        console.log("-- call js log--");
+        this.lib.jsLoggy();
+
+        console.log("-- call js increment--");
+        console.log(this.lib.jsIncrement(1));
+        console.log(this.lib.jsIncrement(6));
       })();
     </script>
   </body>

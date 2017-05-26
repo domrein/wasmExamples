@@ -1,6 +1,20 @@
 (module
+  ;; import functions passed to wasm module from js (imports have to be first) (two level namespace)
+  (import "utils" "log" (func $log))
+  ;; you get one param, use memory if you need more
+  (import "utils" "increment" (func $increment (param i32) (result i32)))
+
   ;; declare memory along with size in pages (pages are 64k each)
   (memory (export "mem") 8)
+
+  ;; call imported js log function from wasm
+  (func (export "jsLoggy")
+    (call $log)
+  )
+  ;; call imported js add function from wasm
+  (func (export "jsIncrement") (param i32) (result i32)
+    (call $increment (get_local 0)) ;; params can be reference by index or name
+  )
   ;; add two integers
   (func (export "addy") (param $first i32) (param $second i32) (result i32)
     ;; add $first and $second and push onto stack
@@ -12,9 +26,10 @@
     (set_local $count (i32.const 0))
     (set_local $reps (i32.sub (get_local $reps) (i32.const 1)))
     (block $break (loop $top
+      ;; branch if
       (br_if $break (i32.eq (get_local $count) (get_local $reps)))
       (set_local $count (i32.add (get_local $count) (i32.const 1)))
-      (br $top)
+      (br $top) ;; branch to block
     ))
     (get_local $count)
   )
