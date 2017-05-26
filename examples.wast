@@ -2,8 +2,9 @@
   ;; declare memory along with size in pages (pages are 64k each)
   (memory (export "mem") 8)
   ;; add two integers
-  (func (export "addy") (param $foo i32) (param $bar i32) (result i32)
-    (i32.add (get_local $foo) (get_local $bar))
+  (func (export "addy") (param $first i32) (param $second i32) (result i32)
+    ;; add $first and $second and push onto stack
+    (i32.add (get_local $first) (get_local $second))
   )
   ;; simple loop
   (func (export "loopIt") (param $reps i32) (result i32)
@@ -26,8 +27,23 @@
     (local $result i32)
     (set_local $result (i32.const 2))
     (if (i32.eq (get_local $zeroOrOne) (i32.const 1))
-      ;; if condition is met block
+      ;; if condition is met block (if param == 1)
       (set_local $result (i32.const 1))
+      ;; else block
+      (set_local $result (i32.const 0))
+    )
+    (get_local $result)
+  )
+  ;; if with block (run multiple commands in if)
+  (func (export "ifBlock") (param $zeroOrOne i32) (result i32)
+    (local $result i32)
+    (set_local $result (i32.const 2))
+    (if (i32.eq (get_local $zeroOrOne) (i32.const 1))
+      ;; if condition is met block (if param == 1)
+      (block
+        (nop) ;; nop = no operation
+        (set_local $result (i32.const 1))
+      )
       ;; else block
       (set_local $result (i32.const 0))
     )
